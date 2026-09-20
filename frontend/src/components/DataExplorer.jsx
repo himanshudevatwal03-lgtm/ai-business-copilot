@@ -11,30 +11,37 @@ export default function DataExplorer() {
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  const fetchData = async () => {
-    setIsLoading(true);
-    try {
-      if (activeTab === 'invoices') {
-        let url = `/api/erp/invoices?search=${encodeURIComponent(search)}`;
-        if (statusFilter) url += `&status=${encodeURIComponent(statusFilter)}`;
-        const res = await fetch(url);
-        if (res.ok) setInvoices(await res.json());
-      } else if (activeTab === 'customers') {
-        const res = await fetch(`/api/erp/customers?search=${encodeURIComponent(search)}`);
-        if (res.ok) setCustomers(await res.json());
-      } else if (activeTab === 'products') {
-        const res = await fetch(`/api/erp/products?search=${encodeURIComponent(search)}`);
-        if (res.ok) setProducts(await res.json());
-      }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchData();
+    let cancelled = false;
+
+    const runFetch = async () => {
+      setIsLoading(true);
+      try {
+        if (activeTab === 'invoices') {
+          let url = `/api/erp/invoices?search=${encodeURIComponent(search)}`;
+          if (statusFilter) url += `&status=${encodeURIComponent(statusFilter)}`;
+          const res = await fetch(url);
+          if (res.ok && !cancelled) setInvoices(await res.json());
+        } else if (activeTab === 'customers') {
+          const res = await fetch(`/api/erp/customers?search=${encodeURIComponent(search)}`);
+          if (res.ok && !cancelled) setCustomers(await res.json());
+        } else if (activeTab === 'products') {
+          const res = await fetch(`/api/erp/products?search=${encodeURIComponent(search)}`);
+          if (res.ok && !cancelled) setProducts(await res.json());
+        }
+      } catch (e) {
+        if (!cancelled) console.error(e);
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    };
+
+    // Debounce search-driven refetches so we don't fire a request per keystroke.
+    const timer = setTimeout(runFetch, 300);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
   }, [activeTab, search, statusFilter]);
 
   return (
