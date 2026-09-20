@@ -1,0 +1,15 @@
+# Phase 2 (on-device NPU) dependencies.
+#
+# Install these ONLY on the Snapdragon X Elite machine itself — they are
+# Windows ARM64 specific and are NOT part of backend/requirements.txt, so
+# they never get pulled into the Render/Linux Docker deployment.
+#
+#   pip install -r requirements-qualcomm.txt
+#   qai-hub configure --api_token <YOUR_QAI_HUB_TOKEN>
+#
+# Then export a model bundle and set QUALCOMM_MODEL_DIR before starting the
+# backend — see backend/app/providers/qualcomm_adapter.py for the full
+# pipeline and README.md's Phase 2 section.
+
+qai_hub_models
+onnxruntime-genai

@@ -105,32 +105,41 @@ To ensure zero unnecessary microservice overhead and optimal developer experienc
 
 ---
 
-## 🔮 Future Qualcomm AI Hub Integration Roadmap (Phase 2)
+## 🔮 Qualcomm AI Hub Integration — Phase 2 (Active)
 
-> **Important Note for Reviewers:**  
-> In Phase 1, all natural language intelligence runs via the built-in deterministic analytics engine. **We do not claim active NPU acceleration in Phase 1.** The architecture is intentionally decoupled to make Phase 2 on-device Snapdragon NPU integration effortless.
+> **Note for Reviewers:**
+> Phase 1 (this repo's default) runs entirely on the built-in deterministic analytics engine — zero external calls. Phase 2, below, is a real, runnable on-device NPU pipeline via `onnxruntime-genai` + QNN, implemented in `backend/app/providers/qualcomm_adapter.py`. It's off by default and only activates on a Snapdragon X Elite machine with the model bundle in place; everywhere else (including this repo's Render deployment) it transparently reports "not ready" and falls back to Phase 1.
 
-### Phase 2 Implementation Plan:
-1. **Model Selection:**
-   - Target: `Phi-3-mini-4k-instruct` (INT4) or `Llama-3-8B-Instruct` (W4A16 / INT4).
-2. **Qualcomm AI Hub Compilation:**
-   - Submit model to [Qualcomm AI Hub](https://aihub.qualcomm.com/) target profile: `Snapdragon X Elite` / `Snapdragon Compute`.
-   - Export optimized QNN-compatible `.onnx` or context binary.
-3. **Runtime Execution Adapter:**
-   - Plug into `backend/app/providers/qualcomm_adapter.py`.
-   - Utilize `onnxruntime` configured with `QNNExecutionProvider`:
-     ```python
-     providers = [
-         ('QNNExecutionProvider', {
-             'backend_path': 'QnnHtp.dll',
-             'htp_performance_mode': 'burst',
-             'enable_htp_fp16_precision': '1'
-         })
-     ]
-     session = ort.InferenceSession(model_path, providers=providers)
-     ```
-4. **Data Privacy Win:**
-   - Complete data isolation: confidential business invoices, profit margins, and customer data never leave the Snapdragon client device.
+### Running Phase 2 on a Snapdragon X Elite device
+
+1. **Export the model via Qualcomm AI Hub** (run this on/for the target device — it compiles on Qualcomm's cloud device farm and can take a while):
+   ```bash
+   pip install qai_hub_models
+   qai-hub configure --api_token <YOUR_QAI_HUB_TOKEN>
+
+   python -m qai_hub_models.models.phi_3_5_mini_instruct.export \
+       --device "Snapdragon X Elite CRD" \
+       --skip-inferencing --skip-profiling \
+       --output-dir genie_bundle
+   ```
+   This produces `genie_bundle/` containing `genai_config.json`, the tokenizer files, and the compiled QNN context binaries.
+
+2. **Install the on-device runtime** on the Snapdragon machine:
+   ```bash
+   pip install -r backend/requirements-qualcomm.txt
+   ```
+   (This file is intentionally separate from `backend/requirements.txt` — it's Windows ARM64-specific and must never be installed in the Linux Docker/Render build.)
+
+3. **Point the backend at the bundle and switch providers**:
+   ```bash
+   set INFERENCE_PROVIDER=qualcomm
+   set QUALCOMM_MODEL_DIR=C:\path\to\genie_bundle
+   uvicorn app.main:app --app-dir backend --host 0.0.0.0 --port 8000
+   ```
+
+4. Ask the Copilot a question — `/api/copilot/query` now runs real autoregressive generation on the Hexagon NPU via `onnxruntime-genai`, grounded in the live ERP context, and the response's `inference_provider` field will read `qualcomm_npu (onnxruntime-genai + QNN, live)`.
+
+**Data privacy:** in this mode, confidential business data (invoices, margins, customer records) never leaves the Snapdragon device — the ERP context is only ever sent to the local NPU process, not to any cloud API.
 
 ---
 
@@ -198,8 +207,12 @@ DATABASE_URL="sqlite:///./copilot_erp.db"
 # Inference Provider:
 # "local"    -> Default high-accuracy local analytics (ZERO keys required)
 # "cloud"    -> Optional OpenAI / cloud LLM completions
-# "qualcomm" -> Phase 2 Snapdragon NPU integration adapter
+# "qualcomm" -> Phase 2 Snapdragon NPU integration adapter (see Phase 2 section above)
 INFERENCE_PROVIDER="local"
+
+# Only used when INFERENCE_PROVIDER="qualcomm" — path to the genie_bundle/
+# directory produced by qai_hub_models export (see Phase 2 section above).
+QUALCOMM_MODEL_DIR=""
 
 # Optional Cloud API Key (only if INFERENCE_PROVIDER="cloud")
 OPENAI_API_KEY=""

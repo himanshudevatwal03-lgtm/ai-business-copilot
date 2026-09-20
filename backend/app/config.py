@@ -18,6 +18,11 @@ class Settings(BaseSettings):
     
     OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
     OPENAI_MODEL: str = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+
+    # Phase 2: path to the onnxruntime-genai bundle exported via qai_hub_models
+    # (see backend/app/providers/qualcomm_adapter.py for the full pipeline).
+    # Only meaningful on the actual Snapdragon X Elite device.
+    QUALCOMM_MODEL_DIR: str = os.getenv("QUALCOMM_MODEL_DIR", "")
     
     CORS_ORIGINS: List[str] = [
         "http://localhost:5173",
