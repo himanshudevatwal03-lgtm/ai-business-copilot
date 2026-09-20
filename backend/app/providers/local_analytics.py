@@ -142,14 +142,20 @@ class LocalAnalyticsProvider(BaseInferenceProvider):
                 latest_month = trends[-1]
                 trend_change = latest_month["revenue"] - first_month["revenue"]
                 direction = "upward" if trend_change >= 0 else "downward"
+                earliest_line = f"${first_month['revenue']:,.2f} ({first_month['orders_count']} orders)"
+                latest_line = f"${latest_month['revenue']:,.2f} ({latest_month['orders_count']} orders)"
+                earliest_label = first_month["month"]
+                latest_label = latest_month["month"]
             else:
                 direction = "stable"
+                earliest_line = latest_line = "No data available"
+                earliest_label = latest_label = "N/A"
 
             answer = (
                 f"### 📈 Major Sales Trends Analysis\n\n"
                 f"- **Overall Trajectory:** Healthy **{direction}** trend over the past {len(trends)} months.\n"
-                f"- **Earliest Tracked Period ({trends[0]['month'] if trends else 'N/A'}):** ${trends[0]['revenue']:,.2f} ({trends[0]['orders_count']} orders)\n"
-                f"- **Latest Period ({trends[-1]['month'] if trends else 'N/A'}):** ${trends[-1]['revenue']:,.2f} ({trends[-1]['orders_count']} orders)\n"
+                f"- **Earliest Tracked Period ({earliest_label}):** {earliest_line}\n"
+                f"- **Latest Period ({latest_label}):** {latest_line}\n"
                 f"- **Key Momentum:** Demand is strongest in the **Edge AI Hardware** and **IoT Sensors** segments, reflecting expanding edge-processing deployments."
             )
             return {
