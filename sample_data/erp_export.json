@@ -1,0 +1,27 @@
+{
+  "system": "AI Business Copilot ERP Sample Export",
+  "generated_at": "2026-09-20T00:00:00Z",
+  "description": "Clean, anonymized enterprise ERP dataset for local development and demonstration",
+  "summary": {
+    "customers_count": 20,
+    "products_count": 12,
+    "target_categories": [
+      "Edge AI Hardware",
+      "IoT Sensors",
+      "Enterprise Software",
+      "Accessories"
+    ]
+  },
+  "sample_entities": {
+    "key_accounts": [
+      {"name": "NeuralEdge Solutions", "region": "North America", "segment": "Enterprise", "credit_limit": 100000.0, "status": "Active"},
+      {"name": "Apex Robotics Corp", "region": "North America", "segment": "Enterprise", "credit_limit": 150000.0, "status": "Active"},
+      {"name": "Titan Heavy Industries", "region": "Europe", "segment": "Enterprise", "credit_limit": 90000.0, "status": "Delinquent"}
+    ],
+    "featured_products": [
+      {"sku": "QCOM-NPU-X1", "name": "Snapdragon Edge AI Accelerator Dev Kit", "category": "Edge AI Hardware", "unit_price": 499.0, "stock": 42},
+      {"sku": "QCOM-VIS-MOD", "name": "Qualcomm Vision Intelligence Core Module", "category": "Edge AI Hardware", "unit_price": 780.0, "stock": 18},
+      {"sku": "IOT-IMU-600", "name": "Industrial High-Precision 6-DoF IMU", "category": "IoT Sensors", "unit_price": 85.0, "stock": 140}
+    ]
+  }
+}

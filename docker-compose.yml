@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  ai-business-copilot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ai_business_copilot
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=production
+      - INFERENCE_PROVIDER=local
+      - DATABASE_URL=sqlite:///./copilot_erp.db
+    volumes:
+      - copilot_data:/app/backend/data
+    restart: unless-stopped
+
+volumes:
+  copilot_data:
