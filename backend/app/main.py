@@ -23,9 +23,6 @@ def init_db():
     finally:
         db.close()
 
-# Auto-initialize database on module load
-init_db()
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_db()

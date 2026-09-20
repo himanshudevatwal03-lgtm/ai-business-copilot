@@ -24,6 +24,9 @@
 9. [Sample ERP Dataset](#-sample-erp-dataset)
 10. [Testing & Verification](#-testing--verification)
 11. [Deployment Guide](#-deployment-guide)
+    - [Docker](#option-1-docker-single-production-container)
+    - [Unified Local Production Run](#option-2-unified-local-production-run)
+    - [Render](#option-3-render-single-web-service)
 
 ---
 
@@ -268,6 +271,21 @@ cd ../backend
 uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 Open `http://localhost:8000` in any browser.
+
+---
+
+### Option 3: Render (Single Web Service)
+
+[#option-3-render-single-web-service](#option-3-render-single-web-service)
+
+Since the Dockerfile already produces a unified production image (frontend built and served by FastAPI), this repo deploys to Render as a single Docker-based Web Service:
+
+1. Push the repo to GitHub (already done).
+2. In Render, create a **New Web Service** → connect this repo → Environment: **Docker**.
+3. Leave the build/start commands blank (the Dockerfile's `CMD` handles it).
+4. Set environment variables under **Environment**: `INFERENCE_PROVIDER=local` (and `OPENAI_API_KEY` only if using `cloud`).
+5. Render sets `PORT` automatically; Uvicorn in the Dockerfile binds `0.0.0.0:8000` — if Render's free tier requires honoring `$PORT`, override the start command to `uvicorn app.main:app --app-dir backend --host 0.0.0.0 --port $PORT`.
+6. Deploy — the same container serves both the API and the built React app from one URL.
 
 ---
 
